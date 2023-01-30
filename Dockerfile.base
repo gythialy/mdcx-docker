@@ -1,0 +1,13 @@
+FROM jlesage/baseimage-gui:ubuntu-20.04-v4
+
+ENV APT_SOURCE_HOST "mirrors.ustc.edu.cn"
+
+RUN \
+    # sed -i "s/archive.ubuntu.com/${APT_SOURCE_HOST}/g" /etc/apt/sources.list && \
+    apt-get update -y && \
+    apt-get install -y software-properties-common locales && \
+    add-apt-repository universe && \
+    locale-gen zh_CN.UTF-8 && \
+    apt-get update -y && apt-get upgrade -y && \
+    apt-get install -y libcairo2-dev build-essential fonts-noto-color-emoji libgl1 qt5-default python3.9-dev python3-pip && \
+    apt autoremove -y && python3.9 -V && pip3 -V

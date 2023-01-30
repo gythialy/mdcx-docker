@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  mdcx:
+    build: .
+    image: ghcr.io/gythialy/mdcx:latest
+    container_name: mdcx
+    volumes:
+      - /mnt/data:/data
+      - ./config.sample.ini:/app/config.ini
+    environment:
+      - DISPLAY_WIDTH=1920
+      - DISPLAY_HEIGHT=1080
+      - VNC_PASSWORD=123456
+    ports:
+      - 5800:5800
+      - 5900:5900
+    restart: unless-stopped
+    network_mode: bridge
+    stdin_open: true
