@@ -13,6 +13,12 @@ jobs:
  
     steps:
     - uses: actions/checkout@v3
+    - name: update upstream code
+      id: update
+      run: | 
+        bash update.sh
+        echo "tag=v1.0.$(cat app/version)" >> $GITHUB_OUTPUT
+      shell: bash
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v4
@@ -23,6 +29,7 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
+          type=raw,value=${{ steps.update.outputs.tag }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: Set up Docker Buildx
@@ -34,9 +41,6 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.DEPLOY_TOKEN }}
-    - name: update upstream code
-      run: bash update.sh
-      shell: bash
     - name: Build and push
       uses: docker/build-push-action@v3
       with:
