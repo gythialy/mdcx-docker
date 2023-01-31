@@ -1,5 +1,6 @@
 FROM ghcr.io/gythialy/mdcx-base:latest
 
+ENV APP_NAME        "Mdcx"
 ENV USER_ID         0
 ENV GROUP_ID        0
 ENV ENABLE_CJK_FONT 1
@@ -7,6 +8,7 @@ ENV LANG            zh_CN.UTF-8
 ENV TZ              Asia/Shanghai
 
 ADD app /app
+COPY config.sample.ini /app/
 
 WORKDIR /app
 
