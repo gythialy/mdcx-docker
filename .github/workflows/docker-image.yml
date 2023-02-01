@@ -4,6 +4,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron:  '0 10 * * *'
 
 jobs:
 
@@ -49,4 +51,17 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
+    - name: Commit and push if changed
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+      run: |-
+        git remote set-url origin https://${GITHUB_TOKEN}@github.com/gythialy/mdcx-docker.git
+        git diff
+        git config --global user.email "gythialy.koo+github@gmail.com"
+        git config --global user.name "Commiter Bot"
+        git add -A
+        git commit -m "🚀 Update MDCX version" || exit 0
+        git push

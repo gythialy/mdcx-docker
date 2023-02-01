@@ -33,4 +33,6 @@ mv "${extract_file}" app && ls -al
 
 echo -e "$(echo "$extract_file" | cut -d'-' -f 3)" > "${VERSION_FILE}"
 
+cp -f "${VERSION_FILE}" "version"
+
 rm -rf ${MDCX_FILE}
