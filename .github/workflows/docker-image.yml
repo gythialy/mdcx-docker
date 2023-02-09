@@ -1,69 +1,72 @@
 name: Docker Image CI
 
-on: 
+on:
   push:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron:  '12 14 * * *'
+    - cron: "12 14 * * *"
 
 jobs:
-
   build:
- 
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
     steps:
-    - uses: actions/checkout@v3
-    - name: update upstream code
-      id: update
-      run: | 
-        bash update.sh
-        echo "tag=v1.0.$(cat app/version)" >> $GITHUB_OUTPUT
-      shell: bash
-    - name: Docker meta
-      id: meta
-      uses: docker/metadata-action@v4
-      with: 
-        images:  ghcr.io/gythialy/mdcx
-        tags: |
-          type=raw,value=latest,enable={{is_default_branch}}
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
-          type=raw,value=${{ steps.update.outputs.tag }}
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Login to GitHub Container Registry
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Build and push
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        platforms: linux/amd64
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - uses: actions/checkout@v3
+      - name: update upstream code
+        id: update
+        run: |
+          bash update.sh
+          echo "tag=v1.0.$(cat app/version)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Changed Files
+        id: files
+        uses: tj-actions/changed-files@v35.5.1
+        with:
+          files: |
+            version
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/gythialy/mdcx
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ steps.update.outputs.tag }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ (github.event_name != 'pull_request' && github.event_name != 'schedule' ) || (github.event_name == 'schedule' && steps.files.outputs.only_changed == 'true') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-    - name: Commit and push if changed
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |-
-        git remote set-url origin https://${GITHUB_TOKEN}@github.com/gythialy/mdcx-docker.git
-        git diff
-        git config --global user.email "gythialy.koo+github@gmail.com"
-        git config --global user.name "Commiter Bot"
-        git add -A
-        git commit -m "🚀 Update MDCX version" || exit 0
-        git push
+      - name: Commit and push if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.files.outputs.only_changed == 'true' }}
+        run: |
+          git remote set-url origin https://${GITHUB_TOKEN}@github.com/gythialy/mdcx-docker.git
+          git config --global user.email "gythialy.koo+github@gmail.com"
+          git config --global user.name "Commiter Bot"
+          git commit -a -m "🚀 Update MDCX version $(cat app/version)"
+          git push
