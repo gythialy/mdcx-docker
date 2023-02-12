@@ -9,5 +9,5 @@ RUN \
     add-apt-repository universe && \
     locale-gen zh_CN.UTF-8 && \
     apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y libcairo2-dev build-essential fonts-noto-color-emoji libgl1 qt5-default python3.9-dev python3-pip && \
+    apt-get install -y libcairo2-dev build-essential fonts-noto-color-emoji libgl1 qt5-default python3.9-dev python3-pip fonts-wqy-zenhei && \
     apt autoremove -y && python3.9 -V && pip3 -V
