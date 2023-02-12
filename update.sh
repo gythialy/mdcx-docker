@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x;
+
 LIBS=(jq curl unrar find)
 MDCX_FILE="mdcx.rar"
 MDCX_PREFIX="MDCx-py-"
@@ -31,15 +33,15 @@ mv "${extract_file}" app && ls -al
 
 [[ ! -e "${VERSION_FILE}" ]] || touch "${VERSION_FILE}"
 
-MDCX_OLD_VERSION="$(cat ${VERSION_FILE})"
+MDCX_OLD_VERSION="$(cat version)"
 MDCX_VERSION="$(echo "$extract_file" | cut -d'-' -f 3)"
-
-is_changed='false'
-if [[ "${MDCX_OLD_VERSION}" != "${MDCX_VERSION}" ]];then
-  is_changed='true'
-fi
 echo -e "${MDCX_VERSION}" > "${VERSION_FILE}"
 echo -e "${MDCX_VERSION}" > "version"
+
+is_changed='false'
+if [[ "$(cat version)" != "$(cat ${VERSION_FILE})" ]];then
+  is_changed='true'
+fi
 echo "is_changed=${is_changed}" >> $GITHUB_OUTPUT
 echo "tag=v1.0.${MDCX_VERSION}" >> $GITHUB_OUTPUT
 
