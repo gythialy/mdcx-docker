@@ -31,8 +31,16 @@ mv "${extract_file}" app && ls -al
 
 [[ ! -e "${VERSION_FILE}" ]] || touch "${VERSION_FILE}"
 
-echo -e "$(echo "$extract_file" | cut -d'-' -f 3)" > "${VERSION_FILE}"
+MDCX_OLD_VERSION="$(cat ${VERSION_FILE})"
+MDCX_VERSION="$(echo "$extract_file" | cut -d'-' -f 3)"
 
-cp -f "${VERSION_FILE}" "version"
+is_changed='false'
+if [[ "${MDCX_OLD_VERSION}" != "${MDCX_VERSION}" ]];then
+  is_changed='true'
+fi
+echo -e "${MDCX_VERSION}" > "${VERSION_FILE}"
+echo -e "${MDCX_VERSION}" > "version"
+echo "is_changed=${is_changed}" >> $GITHUB_OUTPUT
+echo "tag=v1.0.${MDCX_VERSION}" >> $GITHUB_OUTPUT
 
 rm -rf ${MDCX_FILE}
