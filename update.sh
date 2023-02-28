@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -eux
 
 LIBS=(jq curl unrar find)
 MDCX_FILE="mdcx.rar"
@@ -21,7 +21,7 @@ for b in "${LIBS[@]}"; do
   fi
 done
 
-ASSET_URL=$(curl -sSL https://api.github.com/repos/anyabc/something/releases/latest | jq -r '.assets[].browser_download_url' | grep $MDCX_PREFIX)
+ASSET_URL=$(curl -sSL https://api.github.com/repos/anyabc/something/releases/latest | jq -r --arg name "${MDCX_PREFIX}" '.assets[] | select(.name | startswith($name)).browser_download_url')
 
 echo "downloading $MDCX_FILE from $ASSET_URL"
 
